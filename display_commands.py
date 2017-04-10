@@ -49,5 +49,17 @@ def get_char(c):
 
 def up(data):
 	return hex(int(data,16) - int("0x020",16))
-def goto(x,y)
-	pass
+
+def get_pos(x,y):
+	if y == 0:
+		row = 0
+	elif y == 1:
+		row = 40
+	elif y == 2:
+		row = 20
+	elif y == 3:
+		row = 84
+	place = hex(row + x + int("0x80",16))
+	return place
+	
+	
