@@ -90,19 +90,38 @@ class pylps:
 		#for x in range(80):
 		#	self.send_set("241")
 
-	def write(self,text):
-		print "Writing: " + str(text)
-		text_l = list(text)
-		for i in range(len(text_l)):
+	def print_string(self,string):
+		text_l = list(string)
+		for i in range(len(string)):
 			self.send_set(dc.get_char(text_l[i]))
-	
 
 
-#MAIN PROGRAM
-#============
-p = pylps(17,27,18,23,24,25,22)
-p.init_4bit()
-p.write("Testing.AaAaAaAaA...   hehe!#%&")
+	def write(self,text,x = 0,y = 0):
+		self.goto(x,y)
+		if len(text) <= 20 + x :
+			self.print_string(text)
+		else:
+			self.print_string(text[:20 - x])
+			c_text = text[20-x:]
+			lines = 1	
+			while len(c_text) >0:
+				self.goto(0,y + lines)
+				self.print_string(c_text[:20])	#TODO
+				if len(c_text) > 20:
+					c_text=c_text[20:]
+					lines += 1
+					if lines > 3:
+						break
+				else:
+					break
+
+				
+		
+
+	def goto(self,x,y):
+		self.send_set(dc.get_pos(x,y))	
+
+
 #GPIO pins
 #PIN	GPIO
 
@@ -113,4 +132,13 @@ p.write("Testing.AaAaAaAaA...   hehe!#%&")
 #RS	17
 #RW	27
 #EN	22
+
+#MAIN PROGRAM
+#============
+p = pylps(17,27,18,23,24,25,22)
+p.init_4bit()
+p.write("abcdefghijklmnopqrstuvwxyz . ABCDEFGHIJKLMNOPQRSTUVWXYZ . !!!!!!!!!!!!!!!!!!!!!!!!")
+
+
+
 
