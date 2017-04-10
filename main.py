@@ -3,14 +3,12 @@ from time import sleep
 gp.setmode(gp.BCM)
 gp.setwarnings(False)
 
-def sleepm(time):
-	sleep(0.001*time)
 
 def sleepu(time):
 	sleep(0.00001*time)
 
 class pylps:
-
+	global sleepm
 	def __init__(self,*pins):	#TODO 8bit interfacing
 		print "\ninitializing LCD\n================\n"
 		if len(pins)==7:
@@ -30,6 +28,8 @@ class pylps:
 			self.init_pins(self.pin_d)
 		elif len(pins)==11:
 			pass
+	def sleepm(time):
+		sleep(0.001*time)
 	
 	def init_pins(self,pin_d):
 		print "setting pins as output:"
@@ -39,9 +39,10 @@ class pylps:
 		
 	def set_pin(self,pin,state):
 		if state == 0:
-			gp.output(pins[pin],gp.LOW)
+			print self.pin_d[pin]
+			gp.output(self.pin_d[pin],gp.LOW)
 		elif state == 1:
-			gp.output(pins[pin],gp.HIGH)	
+			gp.output(self.pin_d[pin],gp.HIGH)	
 		
 	def nibble(self,duration = 0.040 ):
 		self.set_pin("en",1)
@@ -51,34 +52,51 @@ class pylps:
 	def send_set(self,data,delay = 0.04,init = False):	#set sent as rs,rw,d1,d2,d3,d4,d5,d6,d7
 		data_l = self.hex_to_int_l(data)
 		
-		self.set_pin("rs",data[0])
-		self.set_pin("rw",data[1])
+		self.set_pin("rs",data_l[0])
+		self.set_pin("rw",data_l[1])
 		
-		self.set_pin("d0",data[2])
-		self.set_pin("d1",data[3])
-		self.set_pin("d2",data[4])
-		self.set_pin("d3",data[5])
+		self.set_pin("d7",data_l[2])
+		self.set_pin("d6",data_l[3])
+		self.set_pin("d5",data_l[4])
+		self.set_pin("d4",data_l[5])
 		self.nibble()
 		if init == False:
-			self.set_pin("d4",data[6])
-			self.set_pin("d5",data[7])
-			self.set_pin("d6",data[8])
-			self.set_pin("d7",data[9])
-		 	self.nibble()
+			self.set_pin("d3",data_l[6])
+			self.set_pin("d2",data_l[7])
+			self.set_pin("d1",data_l[8])
+			self.set_pin("d0",data_l[9])
+			self.nibble()
 		sleepm(delay)
 
 	def hex_to_int_l(self,data):
-		data_l = list(map(int,"%011d"%int(bin(int(data,16))[2:])))
+		data_l = list(map(int,"%010d"%int(bin(int(data,16))[2:])))
 		print "hex: " + data + " = " + str(data_l)
 		return data_l
 
-	
+	def init_4bit(self):
+		print "initializing 4 bit mode"
+		sleepm(20)	#initialize 4 pins
+		self.send_set("30",4.1,True)
+		self.send_set("30",0.1,True)
+		self.send_set("30",4.1,True)
+		self.send_set("20",5,True)
+		
+		self.send_set("14")
+		self.send_set("08")
+		self.send_set("01",1.7)
+		self.send_set("06")	
+		self.send_set("0f")
+		for x in range(80):
+			self.send_set("241")
+
+
+
+
+
 #MAIN PROGRAM
 #============
 p = pylps(17,27,18,23,24,25,22)
-
-p.hex_to_int_l("0x01")
-
+p.init_4bit()
 #GPIO pins
 #PIN	GPIO
 
